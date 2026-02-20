@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Facechinko</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <section id="join-view" class="card">
+      <h1>Facechinko</h1>
+      <input id="room-code" placeholder="Room Code" maxlength="8" />
+      <input id="player-name" placeholder="Your Name" maxlength="32" />
+      <button id="validate-btn">Continue</button>
+      <p id="join-error" class="error"></p>
+    </section>
+
+    <section id="team-view" class="card hidden">
+      <h2>Select Team</h2>
+      <div id="teams" class="grid"></div>
+      <p id="team-error" class="error"></p>
+    </section>
+
+    <section id="wait-view" class="card hidden">
+      <h2>Waiting for game start...</h2>
+      <div id="ball-preview" class="ball"></div>
+      <h3 id="preview-name"></h3>
+      <p id="preview-team"></p>
+      <p id="status"></p>
+    </section>
+
+    <section id="result-view" class="card hidden">
+      <h2 id="result-title"></h2>
+      <p id="result-subtitle"></p>
+    </section>
+  </main>
+  <script src="main.js"></script>
+</body>
+</html>
