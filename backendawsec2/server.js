@@ -43,6 +43,22 @@ function nowMs() {
   return Date.now();
 }
 
+
+function jsonResponse(res, bodyObj, code = 200) {
+  res.writeHead(code, {
+    "Content-Type": "application/json",
+    ...CORS_HEADERS,
+  });
+  res.end(JSON.stringify(bodyObj));
+}
+
+function getFacechinkoSession(code) {
+  const cleanCode = lettersOnly(code || "");
+  const session = sessions.get(cleanCode);
+  if (!session || session.gameType !== "facechinko") return null;
+  return session;
+}
+
 // --- state ---
 const sessions = new Map(); // code -> session
 
@@ -50,6 +66,7 @@ const sessions = new Map(); // code -> session
 const adapters = {
   popcorn: require(path.join(__dirname, "games", "popcorn.js")),
   truckofwar: require(path.join(__dirname, "games", "truckofwar.js")), // NEW
+  facechinko: require(path.join(__dirname, "games", "facechinko.js")),
 };
 
 // create server
@@ -117,6 +134,69 @@ const server = http.createServer((req, res) => {
     return res.end(body);
   }
 
+  // --- Facechinko web endpoints ---
+  if (path === "/facechinko/validate" && req.method === "GET") {
+    const code = url.searchParams.get("code") || "";
+    const name = (url.searchParams.get("name") || "").trim();
+    const session = getFacechinkoSession(code);
+
+    if (!session) {
+      return jsonResponse(res, { ok: false, reason: "code_not_found" });
+    }
+    if (!name) {
+      return jsonResponse(res, { ok: false, reason: "missing_name" });
+    }
+
+    const teams = adapters.facechinko.teamDefinitions.map((t) => ({
+      teamId: t.teamId,
+      name: t.name,
+      color: t.color,
+    }));
+    return jsonResponse(res, { ok: true, code: session.code, name, teams });
+  }
+
+  if (path === "/facechinko/select-team" && req.method === "GET") {
+    const code = url.searchParams.get("code") || "";
+    const uid = (url.searchParams.get("uid") || "").trim();
+    const name = (url.searchParams.get("name") || "").trim();
+    const teamId = parseInt(url.searchParams.get("teamId") || "0", 10);
+    const session = getFacechinkoSession(code);
+
+    if (!session) return jsonResponse(res, { ok: false, reason: "code_not_found" });
+    if (!uid) return jsonResponse(res, { ok: false, reason: "missing_uid" });
+    if (!name) return jsonResponse(res, { ok: false, reason: "missing_name" });
+    if (!Number.isFinite(teamId) || teamId < 1 || teamId > 14) {
+      return jsonResponse(res, { ok: false, reason: "invalid_team" });
+    }
+
+    const info = adapters.facechinko.registerWebPlayer(session, { uid, name, teamId });
+    if (!info) return jsonResponse(res, { ok: false, reason: "registration_failed" });
+    return jsonResponse(res, { ok: true, player: info });
+  }
+
+  if (path === "/facechinko/player-state" && req.method === "GET") {
+    const code = url.searchParams.get("code") || "";
+    const uid = (url.searchParams.get("uid") || "").trim();
+    const session = getFacechinkoSession(code);
+
+    if (!session) return jsonResponse(res, { ok: false, reason: "code_not_found" });
+    if (!uid) return jsonResponse(res, { ok: false, reason: "missing_uid" });
+
+    const state = adapters.facechinko.getWebPlayerState(session, uid);
+    if (!state) return jsonResponse(res, { ok: false, reason: "player_not_found" });
+
+    const isWinner = Number.isInteger(state.winningTeamId) && state.winningTeamId === state.teamId;
+    return jsonResponse(res, {
+      ok: true,
+      player: state,
+      result: state.phase === "ended" ? {
+        won: isWinner,
+        winningTeamId: state.winningTeamId,
+        mvpName: state.mvpName,
+      } : null,
+    });
+  }
+
   // --- Default response for other paths ---
   res.writeHead(200, {
     "Content-Type": "text/plain; charset=utf-8",
@@ -142,7 +222,7 @@ function endSession(session) {
   try {
     const adapter = adapters[session.gameType];
     if (
-      session.gameType === "truckofwar" &&
+      (session.gameType === "truckofwar" || session.gameType === "facechinko") &&
       adapter &&
       typeof adapter.onSessionEnd === "function"
     ) {
@@ -224,7 +304,7 @@ function scheduleUnityTimeout(session) {
     try {
       const adapter = adapters[current.gameType];
       if (
-        current.gameType === "truckofwar" &&
+        (current.gameType === "truckofwar" || current.gameType === "facechinko") &&
         adapter &&
         typeof adapter.onForcedEnd === "function"
       ) {
@@ -459,7 +539,7 @@ wss.on("connection", (ws) => {
 
     // PLAYER JOINS GAME
     if (msg.type === "playerJoin") {
-      const { code, username, seat } = msg;
+      const { code, username, seat, teamId, uid } = msg;
       const cleanCode = lettersOnly(code || "");
       const uname = (username || "").trim();
       const seatId = (seat || "").trim().toUpperCase();
@@ -528,6 +608,11 @@ wss.on("connection", (ws) => {
         username: uname,
         seat: seatId,
         teamIndex: null, // will be filled by adapter
+        preferredTeamIndex:
+          session.gameType === "facechinko" && Number.isFinite(parseInt(teamId, 10))
+            ? Math.max(0, Math.min(13, parseInt(teamId, 10) - 1))
+            : null,
+        facechinkoUid: session.gameType === "facechinko" ? (uid || "").trim() : null,
         resumeToken,
       };
 
