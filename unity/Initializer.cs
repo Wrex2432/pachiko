@@ -15,7 +15,7 @@ public class Initializer : MonoBehaviour
         public string gameType = "facechinko";
         public string location = "CINEMA_A";
         public int allowedNumberOfPlayers = 56;
-        public int teamCount = 14;
+        public int teamCount = 13;
         public int lobbyDurationSeconds = 30;
         public string backendWsUrl = "wss://api.prologuebymetama.com/ws";
         public int roomCodeLength = 4;

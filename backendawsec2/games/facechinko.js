@@ -68,11 +68,11 @@ function ensureState(session) {
   if (!session.state || typeof session.state !== "object") session.state = {};
   const st = session.state;
 
-  st.teamCount = 14;
-  if (!Array.isArray(st.teams)) st.teams = Array.from({ length: 14 }, (_, i) => ({
+  st.teamCount = FACECHINKO_TEAMS.length;
+  if (!Array.isArray(st.teams)) st.teams = Array.from({ length: FACECHINKO_TEAMS.length }, (_, i) => ({
     teamIndex: i,
     teamId: i + 1,
-    name: `TEAM ${i + 1}`,
+    name: FACECHINKO_TEAMS[i].name,
     color: FACECHINKO_TEAMS[i].color,
     players: [],
   }));
@@ -88,9 +88,20 @@ function ensureState(session) {
 }
 
 const FACECHINKO_TEAMS = [
-  "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5", "#2196F3", "#03A9F4",
-  "#00BCD4", "#009688", "#4CAF50", "#8BC34A", "#FF9800", "#FF5722", "#795548",
-].map((color, idx) => ({ teamId: idx + 1, name: `TEAM ${idx + 1}`, color }));
+  { name: "Team Dana & Greggy", color: "#FFA500" },
+  { name: "Team Mond & Saeid", color: "#008000" },
+  { name: "Team Jill & Alvin", color: "#0000FF" },
+  { name: "Team Sam & Ninya", color: "#800080" },
+  { name: "Team Ynna", color: "#FFDF00" },
+  { name: "Team Jasper", color: "#4B0082" },
+  { name: "Team Jordy", color: "#00A86B" },
+  { name: "Team MEDIA", color: "#FFEFD5" },
+  { name: "Team STRAT", color: "#4169E1" },
+  { name: "Team HR & ADMIN", color: "#F4D23C" },
+  { name: "Team FINANCE", color: "#32CD32" },
+  { name: "Team Micco", color: "#89CFF0" },
+  { name: "Team Bev", color: "#FF0000" },
+].map((team, idx) => ({ teamId: idx + 1, ...team }));
 
 function rosterSnapshot(session) {
   const st = ensureState(session);
@@ -192,7 +203,7 @@ module.exports = {
 
   onInit() {
     return {
-      teamCount: 14,
+      teamCount: FACECHINKO_TEAMS.length,
       playersByUid: {},
       uidByNameKey: {},
       startedAt: null,
