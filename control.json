@@ -4,7 +4,6 @@
   "allowedNumberOfPlayers": 56,
   "teamCount": 14,
   "lobbyDurationSeconds": 30,
-  "roomCodeLength": 4,
   "backendWsUrl": "wss://api.prologuebymetama.com/ws",
-  "notes": "Facechinko runtime control file"
+  "roomCodeLength": 4
 }
