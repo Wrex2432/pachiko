@@ -165,7 +165,8 @@ const server = http.createServer((req, res) => {
     if (!session) return jsonResponse(res, { ok: false, reason: "code_not_found" });
     if (!uid) return jsonResponse(res, { ok: false, reason: "missing_uid" });
     if (!name) return jsonResponse(res, { ok: false, reason: "missing_name" });
-    if (!Number.isFinite(teamId) || teamId < 1 || teamId > 14) {
+    const maxTeamId = adapters.facechinko.teamDefinitions.length;
+    if (!Number.isFinite(teamId) || teamId < 1 || teamId > maxTeamId) {
       return jsonResponse(res, { ok: false, reason: "invalid_team" });
     }
 
