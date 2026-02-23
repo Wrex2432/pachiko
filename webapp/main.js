@@ -17,7 +17,7 @@ const views = {
   result: document.getElementById("result-view")
 };
 
-const state = { code: "", name: "", teamId: null, poll: null };
+const state = { code: "", name: "", teamId: null, teams: [], poll: null };
 
 function show(name) {
   Object.values(views).forEach(v => v.classList.add("hidden"));
@@ -43,7 +43,8 @@ document.getElementById("validate-btn").onclick = async () => {
 
   state.code = code;
   state.name = name;
-  renderTeams(res.teams || []);
+  state.teams = res.teams || [];
+  renderTeams(state.teams);
   show("team");
 };
 
@@ -93,8 +94,9 @@ async function pollState() {
     clearInterval(state.poll);
     show("result");
     document.getElementById("result-title").textContent = res.result.won ? "Your Team Won!" : "You Lose";
+    const winningTeam = state.teams.find((t) => t.teamId === res.result.winningTeamId);
     document.getElementById("result-subtitle").textContent = res.result.won
       ? `MVP: ${res.result.mvpName || "TBD"}`
-      : `Winning Team: TEAM ${res.result.winningTeamId || "?"}`;
+      : `Winning Team: ${winningTeam ? winningTeam.name : (res.result.winningTeamId ? `Team #${res.result.winningTeamId}` : "Unknown")}`;
   }
 }
