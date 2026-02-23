@@ -43,7 +43,6 @@ function nowMs() {
   return Date.now();
 }
 
-
 function jsonResponse(res, bodyObj, code = 200) {
   res.writeHead(code, {
     "Content-Type": "application/json",
@@ -626,6 +625,8 @@ wss.on("connection", (ws) => {
         username: uname,
         seat: seatId || null,
         teamIndex: teamIndex,
+        // Facechinko: keep a stable UID across refresh/resume
+        uid: session.gameType === "facechinko" ? (session.players[clientId].facechinkoUid || null) : null,
       };
 
       // Tell the client they joined successfully (+ give resume token)
@@ -784,6 +785,8 @@ wss.on("connection", (ws) => {
         username: entry.username,
         seat: entry.seat || "",
         teamIndex: entry.teamIndex, // keep the SAME team
+        // Facechinko: carry UID through resume so the adapter can map team/MVP consistently
+        facechinkoUid: session.gameType === "facechinko" ? (entry.uid || null) : null,
         resumeToken,
       };
 
@@ -909,6 +912,8 @@ wss.on("connection", (ws) => {
           username: player.username,
           seat: player.seat || null,
           teamIndex: player.teamIndex,
+          // Facechinko: persist UID so refresh/resume doesn't create a new identity
+          uid: session.gameType === "facechinko" ? (player.facechinkoUid || null) : null,
         };
       }
 

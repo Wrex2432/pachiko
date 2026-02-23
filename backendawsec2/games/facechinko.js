@@ -129,15 +129,25 @@ function upsertPlayer(st, player) {
   const existingUid = st.uidByNameKey[nameKey];
   const uid = player.uid || existingUid || `fc_${Math.random().toString(36).slice(2, 12)}`;
 
-  const teamIndex = Number.isInteger(player.teamIndex) ? player.teamIndex : 0;
+  const existing = st.playersByUid[uid] || null;
+
+  // IMPORTANT: Preserve existing teamIndex unless caller explicitly provided one.
+  const hasIncomingTeam = Number.isInteger(player.teamIndex);
+  const teamIndex = hasIncomingTeam
+    ? Math.max(0, Math.min(13, player.teamIndex))
+    : existing
+      ? existing.teamIndex
+      : 0;
+
   st.playersByUid[uid] = {
     uid,
     name: String(player.name || "").trim(),
     teamIndex,
     connected: !!player.connected,
-    joinedAt: st.playersByUid[uid]?.joinedAt || nowIso(),
+    joinedAt: existing?.joinedAt || nowIso(),
     updatedAt: nowIso(),
   };
+
   st.uidByNameKey[nameKey] = uid;
   return st.playersByUid[uid];
 }
@@ -212,11 +222,17 @@ module.exports = {
     const p = session.players[clientId];
     if (!p) return;
 
-    const preferredTeam = Number.isInteger(p.preferredTeamIndex) ? p.preferredTeamIndex : 0;
+    const uidToUse = p.facechinkoUid || p.resumeToken;
+
+    // If player already exists (e.g., selected team via /facechinko/select-team),
+    // do NOT overwrite their team unless a preferredTeamIndex was explicitly provided.
+    const existing = st.playersByUid[uidToUse] || null;
+    const hasPreferred = Number.isInteger(p.preferredTeamIndex);
+
     const merged = upsertPlayer(st, {
-      uid: p.facechinkoUid || p.resumeToken,
+      uid: uidToUse,
       name: p.username,
-      teamIndex: preferredTeam,
+      teamIndex: hasPreferred ? p.preferredTeamIndex : (existing ? existing.teamIndex : 0),
       connected: true,
     });
     if (!merged) return;
@@ -235,7 +251,7 @@ module.exports = {
     const merged = upsertPlayer(st, {
       uid: entry?.uid || p.resumeToken,
       name: entry?.username || p.username,
-      teamIndex: Number.isInteger(entry?.teamIndex) ? entry.teamIndex : p.teamIndex || 0,
+      teamIndex: Number.isInteger(entry?.teamIndex) ? entry.teamIndex : (p.teamIndex || 0),
       connected: true,
     });
 
@@ -277,9 +293,15 @@ module.exports = {
     }
 
     if (payload.kind === "gameOver") {
-      st.winningTeamIndex = Number.isInteger(payload.winningTeamIndex)
-        ? payload.winningTeamIndex
-        : null;
+      // Accept either winningTeamIndex (0-13) or winningTeamId (1-14)
+      let wIdx = null;
+      if (Number.isInteger(payload.winningTeamIndex)) wIdx = payload.winningTeamIndex;
+      else if (Number.isFinite(Number(payload.winningTeamId))) wIdx = Number(payload.winningTeamId) - 1;
+
+      if (Number.isInteger(wIdx)) wIdx = Math.max(0, Math.min(13, wIdx));
+      else wIdx = null;
+
+      st.winningTeamIndex = wIdx;
       st.mvpUid = payload.mvpUid || null;
       finalizeAndStore(session, "unity_gameOver").catch(() => {});
       return;

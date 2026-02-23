@@ -1,9 +1,0 @@
-body { font-family: Arial, sans-serif; background: #111; color: #fff; display:flex; justify-content:center; padding:24px; }
-.card { width: min(520px, 95vw); background:#1f1f1f; border-radius:12px; padding:20px; margin-bottom:16px; }
-.hidden { display:none; }
-input, button { width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #444; }
-button { cursor:pointer; background:#4caf50; color:white; border:none; }
-.grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
-.team-btn { border:none; color:#fff; font-weight:700; padding:12px; border-radius:10px; cursor:pointer; }
-.ball { width:100px; height:100px; border-radius:50%; margin:12px auto; border:3px solid #fff; }
-.error { color:#ff8080; min-height:20px; }

@@ -1,14 +1,29 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerLogic : MonoBehaviour
 {
+    [Header("Runtime Data")]
     [SerializeField] private string uid;
     [SerializeField] private string playerName;
     [SerializeField] private int teamIndex;
+
+    [Header("References")]
     [SerializeField] private Renderer ballRenderer;
     [SerializeField] private Text nameTopText;
     [SerializeField] private Text teamBottomText;
+
+    // ==== GLOBAL COLLISION TOGGLE ====
+    // If true: balls collide with each other
+    // If false: balls ignore each other
+    public static bool GlobalBallToBallCollisionEnabled { get; private set; } = false;
+
+    // Track all active ball colliders (supports 1 collider per ball, which is typical)
+    private static readonly List<Collider> AllBallColliders = new();
+
+    private Collider myCollider;
+    private MaterialPropertyBlock mpb;
 
     private static readonly Color[] TeamColors = new Color[]
     {
@@ -28,15 +43,40 @@ public class PlayerLogic : MonoBehaviour
     public string UID => uid;
     public int TeamIndex => teamIndex;
 
+    private void Awake()
+    {
+        if (ballRenderer == null)
+            ballRenderer = GetComponentInChildren<Renderer>();
+
+        myCollider = GetComponentInChildren<Collider>();
+        mpb = new MaterialPropertyBlock();
+    }
+
+    private void OnEnable()
+    {
+        RegisterCollider();
+        ApplyCollisionRuleForThisCollider();
+        RefreshVisuals();
+    }
+
+    private void OnDisable()
+    {
+        UnregisterCollider();
+    }
+
+    private void OnDestroy()
+    {
+        UnregisterCollider();
+    }
+
     public void Init(string newUid, string newName, int newTeamIndex)
     {
         uid = newUid;
         playerName = newName;
         teamIndex = Mathf.Clamp(newTeamIndex, 0, TeamColors.Length - 1);
         RefreshVisuals();
+        // Collision rule is global; no need to change per player on Init.
     }
-
-    private void Awake() => RefreshVisuals();
 
     private void RefreshVisuals()
     {

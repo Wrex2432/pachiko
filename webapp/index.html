@@ -1,40 +1,139 @@
 <!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Facechinko</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <main>
-    <section id="join-view" class="card">
-      <h1>Facechinko</h1>
-      <input id="room-code" placeholder="Room Code" maxlength="8" />
-      <input id="player-name" placeholder="Your Name" maxlength="32" />
-      <button id="validate-btn">Continue</button>
-      <p id="join-error" class="error"></p>
-    </section>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Facechinko</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo"></div>
+          <div class="brand-text">
+            <div class="title">FACECHINKO</div>
+            <div class="subtitle" id="StatusLine">Connecting…</div>
+          </div>
+        </div>
 
-    <section id="team-view" class="card hidden">
-      <h2>Select Team</h2>
-      <div id="teams" class="grid"></div>
-      <p id="team-error" class="error"></p>
-    </section>
+        <div class="pill-row">
+          <span class="pill" id="PillCode">CODE: —</span>
+          <span class="pill" id="PillUid">UID: —</span>
+        </div>
+      </header>
 
-    <section id="wait-view" class="card hidden">
-      <h2>Waiting for game start...</h2>
-      <div id="ball-preview" class="ball"></div>
-      <h3 id="preview-name"></h3>
-      <p id="preview-team"></p>
-      <p id="status"></p>
-    </section>
+      <!-- JOIN -->
+      <section class="card" id="ViewJoin">
+        <h1>Join the game</h1>
+        <p class="muted">
+          Enter the room code and your name. Then choose your team.
+        </p>
 
-    <section id="result-view" class="card hidden">
-      <h2 id="result-title"></h2>
-      <p id="result-subtitle"></p>
-    </section>
-  </main>
-  <script src="main.js"></script>
-</body>
+        <form id="JoinForm" class="form">
+          <label class="field">
+            <span>Room Code</span>
+            <input id="RoomCodeInput" maxlength="8" placeholder="ABCD" autocomplete="off" />
+          </label>
+
+          <label class="field">
+            <span>Your Name</span>
+            <input id="NameInput" maxlength="24" placeholder="Miggy" autocomplete="name" />
+          </label>
+
+          <button class="btn primary" type="submit" id="JoinBtn">
+            Continue
+          </button>
+
+          <div class="error" id="JoinError" hidden></div>
+        </form>
+
+        <div class="hint">
+          Tip: You can also open with <code>?code=ABCD</code> and it will prefill the room code.
+        </div>
+      </section>
+
+      <!-- TEAM SELECT -->
+      <section class="card" id="ViewTeam" hidden>
+        <h1>Select a team</h1>
+        <p class="muted">Pick one of the 14 teams. Colors are team identity for now.</p>
+
+        <div class="team-grid" id="TeamGrid"></div>
+
+        <div class="row">
+          <button class="btn" id="BackToJoinBtn">Back</button>
+          <button class="btn primary" id="ConfirmTeamBtn" disabled>Confirm Team</button>
+        </div>
+
+        <div class="error" id="TeamError" hidden></div>
+      </section>
+
+      <!-- WAITING -->
+      <section class="card" id="ViewWaiting" hidden>
+        <h1>Waiting for the game to start…</h1>
+        <p class="muted" id="WaitingHint">
+          Stay on this page. When Unity starts the match, you’ll automatically get the result.
+        </p>
+
+        <div class="ball-preview">
+          <div class="ball" id="BallPreview">
+            <div class="ball-name" id="BallName">—</div>
+            <div class="ball-team" id="BallTeam">—</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn" id="ReconnectBtn">Reconnect</button>
+          <button class="btn danger" id="ResetBtn">Reset</button>
+        </div>
+
+        <div class="mini" id="ConnDetails">—</div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="card" id="ViewResult" hidden>
+        <h1 id="ResultTitle">Result</h1>
+        <p class="muted" id="ResultSub">—</p>
+
+        <div class="result-box" id="ResultBox">
+          <div class="result-line">
+            <span class="label">Winning Team</span>
+            <span class="value" id="WinningTeamText">—</span>
+          </div>
+
+          <div class="result-line">
+            <span class="label">MVP</span>
+            <span class="value" id="MvpNameText">—</span>
+          </div>
+
+          <div class="result-line">
+            <span class="label">Your Team</span>
+            <span class="value" id="YourTeamText">—</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn" id="PlayAgainBtn">Play Again</button>
+        </div>
+      </section>
+
+      <!-- ENDED / PAUSED -->
+      <section class="card" id="ViewEnded" hidden>
+        <h1 id="EndedTitle">Game ended</h1>
+        <p class="muted" id="EndedSub">
+          The session has ended. Please refresh or enter a new code.
+        </p>
+
+        <div class="row">
+          <button class="btn" id="EndedResetBtn">Enter New Code</button>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>© Prologue by Metama</span>
+      </footer>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
 </html>
