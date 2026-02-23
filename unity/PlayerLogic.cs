@@ -12,10 +12,17 @@ public class PlayerLogic : MonoBehaviour
 
     private static readonly Color[] TeamColors = new Color[]
     {
-        new(0.95f,0.26f,0.21f), new(0.91f,0.12f,0.39f), new(0.61f,0.15f,0.69f), new(0.40f,0.23f,0.72f),
-        new(0.25f,0.32f,0.71f), new(0.13f,0.59f,0.95f), new(0.01f,0.66f,0.96f), new(0.00f,0.74f,0.83f),
-        new(0.00f,0.59f,0.53f), new(0.30f,0.69f,0.31f), new(0.55f,0.76f,0.29f), new(1.00f,0.60f,0.00f),
-        new(1.00f,0.34f,0.13f), new(0.47f,0.33f,0.28f)
+        new(1.00f,0.65f,0.00f), new(0.00f,0.50f,0.00f), new(0.00f,0.00f,1.00f), new(0.50f,0.00f,0.50f),
+        new(1.00f,0.87f,0.00f), new(0.29f,0.00f,0.51f), new(0.00f,0.66f,0.42f), new(1.00f,0.94f,0.84f),
+        new(0.25f,0.41f,0.88f), new(0.96f,0.82f,0.24f), new(0.20f,0.80f,0.20f), new(0.54f,0.81f,0.94f),
+        new(1.00f,0.00f,0.00f)
+    };
+
+    private static readonly string[] TeamNames = new string[]
+    {
+        "Team Dana & Greggy", "Team Mond & Saeid", "Team Jill & Alvin", "Team Sam & Ninya",
+        "Team Ynna", "Team Jasper", "Team Jordy", "Team MEDIA", "Team STRAT", "Team HR & ADMIN",
+        "Team FINANCE", "Team Micco", "Team Bev"
     };
 
     public string UID => uid;
@@ -25,7 +32,7 @@ public class PlayerLogic : MonoBehaviour
     {
         uid = newUid;
         playerName = newName;
-        teamIndex = Mathf.Clamp(newTeamIndex, 0, 13);
+        teamIndex = Mathf.Clamp(newTeamIndex, 0, TeamColors.Length - 1);
         RefreshVisuals();
     }
 
@@ -37,6 +44,6 @@ public class PlayerLogic : MonoBehaviour
         if (ballRenderer != null) ballRenderer.material.color = TeamColors[teamIndex];
 
         if (nameTopText != null) nameTopText.text = playerName;
-        if (teamBottomText != null) teamBottomText.text = $"TEAM {teamIndex + 1}";
+        if (teamBottomText != null) teamBottomText.text = TeamNames[teamIndex];
     }
 }

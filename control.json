@@ -2,7 +2,7 @@
   "gameType": "facechinko",
   "location": "CINEMA_A",
   "allowedNumberOfPlayers": 56,
-  "teamCount": 14,
+  "teamCount": 13,
   "lobbyDurationSeconds": 30,
   "roomCodeLength": 4,
   "backendWsUrl": "wss://api.prologuebymetama.com/ws",
